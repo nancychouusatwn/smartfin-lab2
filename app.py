@@ -18,25 +18,27 @@ div_min, div_max = st.sidebar.slider("殖利率 (%)", 0.0, 10.0, (0.0, 5.0))
 market_cap_options = ["All", "Large Cap (>10B)", "Mid Cap (2B-10B)", "Small Cap (<2B)"]
 selected_mktcap = st.sidebar.selectbox("市值等級", market_cap_options)
 
-# 從 CSV 載入 1000 支股票模擬資料
-@st.cache_data
-def load_large_sample():
-    df = pd.read_csv("https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents-financials.csv")
-    df = df.rename(columns={
-        "Symbol": "Ticker",
-        "Name": "Company",
-        "Sector": "Sector",
-        "Market Cap": "Market Cap",
-        "Price/Earnings": "PE Ratio",
-        "Dividend Yield": "Dividend Yield"
+# 模擬股票資料（10支）
+def load_sample_data():
+    tickers = ['AAPL', 'MSFT', 'KO', 'JNJ', 'WMT', 'XOM', 'TSLA', 'NVDA', 'JPM', 'T']
+    sectors = ['Technology', 'Technology', 'Consumer Defensive', 'Healthcare', 'Consumer Defensive',
+               'Energy', 'Consumer Cyclical', 'Technology', 'Financial Services', 'Communication']
+    market_caps = [2.5e12, 2.2e12, 270e9, 400e9, 400e9, 500e9, 800e9, 1.4e12, 380e9, 140e9]
+    pe_ratios = [28.5, 32.2, 23.1, 17.8, 22.5, 12.3, 60.0, 45.0, 11.5, 7.2]
+    dividends = [0.55, 0.75, 3.2, 2.7, 1.5, 4.1, 0.0, 0.1, 2.8, 6.0]
+
+    df = pd.DataFrame({
+        'Ticker': tickers,
+        'Company': ['Apple', 'Microsoft', 'Coca-Cola', 'Johnson & Johnson', 'Walmart',
+                    'Exxon Mobil', 'Tesla', 'NVIDIA', 'JPMorgan Chase', 'AT&T'],
+        'Sector': sectors,
+        'Market Cap': market_caps,
+        'PE Ratio': pe_ratios,
+        'Dividend Yield': dividends
     })
-    df = df.dropna(subset=["PE Ratio", "Dividend Yield", "Market Cap"])
-    df["Market Cap"] = df["Market Cap"].astype(float)
-    df["PE Ratio"] = df["PE Ratio"].astype(float)
-    df["Dividend Yield"] = df["Dividend Yield"].astype(float)
     return df
 
-data = load_large_sample()
+data = load_sample_data()
 
 # 根據選擇篩選
 if selected_sector != "All":
@@ -55,7 +57,7 @@ if selected_mktcap != "All":
 
 # 顯示結果
 st.subheader("📈 篩選結果")
-st.dataframe(data.head(100).style.format({
+st.dataframe(data.style.format({
     "Market Cap": "$ {:,.0f}",
     "PE Ratio": "{:.2f}",
     "Dividend Yield": "{:.2f}%"
